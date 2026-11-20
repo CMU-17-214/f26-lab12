@@ -1,0 +1,27 @@
+name: CI
+
+# Run on every push and every pull request.
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Get the repo's code onto the runner.
+      - uses: actions/checkout@v4
+
+      # 2. Install Python (3.11 is the minimum in pyproject.toml).
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      # 3. Install the pinned dev tools (pytest, ruff, mypy, pip-audit).
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      # 4. Run the test suite. A failing test fails the run.
+      - name: Run tests
+        run: pytest
