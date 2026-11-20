@@ -47,9 +47,10 @@ def build_statement(
     tier_name: str,
     # Assign empty list o adjustments
     # adjustments: list[str] = [],
-    adjustments: list[str] = None,
+    adjustments: list[str] | None = None,
 ) -> RefundStatement:
     """Assemble the statement the platform files against the cancellation."""
+    adjustments = list(adjustments) if adjustments is not None else []
     adjustments.append(f"settled under the {tier_name} tier")
     withheld = booking.price_as_booked_cents - refund
     if withheld > 0:
