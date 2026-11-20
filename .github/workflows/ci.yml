@@ -65,5 +65,7 @@ jobs:
           cache: pip
       - run: pip install -r requirements-dev.txt
       # Dependency audit: checks runtime packages against known vulnerabilities.
+      # babel 2.9.0 was flagged (PYSEC-2021-421, code execution). Nothing in the
+      # service imports babel, so we removed it instead of upgrading or ignoring.
       - name: pip-audit
         run: pip-audit -r requirements.txt
