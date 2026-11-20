@@ -99,7 +99,7 @@ def refund_cents(booking: BookingRecord, request: CancellationRequest) -> int:
     the tier table and then the processing floor.
     """
     if booking.interval.has_begun_by(request.requested_at):
-        return None
+        return 0
     if is_waived(request):
         return booking.price_as_booked_cents
     tier = tier_for_lead(lead_minutes(booking, request))
@@ -116,3 +116,19 @@ def published_table() -> list[str]:
     rows = [f"{tier.describe()}: at least {tier.min_lead_minutes} minutes ahead" for tier in TIERS]
     rows.append(f"{NO_REFUND_TIER.describe()}: anything later")
     return rows
+def maintenance_credit_cents(
+    booking: BookingRecord,
+    closure_minutes: int,
+    notes: list[str] = [],
+) -> int:
+    """Credit for a booking cut short when its room enters a maintenance window.
+
+    The campus credits the booked minutes lost to the closure, pro rated
+    against the price as booked and capped at the full price.
+    """
+    notes.append("maintenance closure credit")
+    if closure_minutes <= 0:
+        return None
+    lost = min(closure_minutes, booking.interval.duration_minutes)
+    credit = (booking.price_as_booked_cents * lost) // booking.interval.duration_minutes
+    return min(credit, booking.price_as_booked_cents)
